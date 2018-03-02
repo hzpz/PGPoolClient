@@ -1,26 +1,22 @@
+import datetime
 import json
 import logging
-
-import requests
 import time
 
-from pgpool_client.config import cfg_get
+import requests
 
 log = logging.getLogger(__name__)
 
 
-def pgpool_load_accounts(num):
+def pgpool_load_accounts(pgpool_url, system_id, num):
     request = {
-        'system_id': cfg_get('system_id'),
-        'count': num,
-        'min_level': cfg_get('pgpool_min_level'),
-        'max_level': cfg_get('pgpool_max_level'),
-        'reuse': cfg_get('reuse')
+        'system_id': system_id,
+        'count': num
     }
 
     while True:
         try:
-            r = requests.get("{}/account/request".format(cfg_get('pgpool_url')), params=request)
+            r = requests.get("{}/account/request".format(pgpool_url), params=request)
             if r.status_code == 200:
                 acc_json = r.json()
                 if isinstance(acc_json, dict):
@@ -36,18 +32,29 @@ def pgpool_load_accounts(num):
         time.sleep(2)
 
 
-def pgpool_mark_banned(username):
-    url = '{}/account/update'.format(cfg_get('pgpool_url'))
+def pgpool_update_account(pgpool_url, data):
+    url = '{}/account/update'.format(pgpool_url)
+    requests.post(url, data=json.dumps(data))
+
+
+def pgpool_mark_banned(pgpool_url, username):
     data = {
         'username': username,
         'banned': True
     }
-    requests.post(url, data=json.dumps(data))
+    pgpool_update_account(pgpool_url, data)
 
 
+def pgpool_account_heartbeat(pgpool_url, username):
+    data = {
+        'username': username,
+        'last_modified': datetime.datetime.now()
+    }
+    pgpool_update_account(pgpool_url, data)
 
-def pgpool_release_account(username):
-    url = '{}/account/release'.format(cfg_get('pgpool_url'))
+
+def pgpool_release_account(pgpool_url, username):
+    url = '{}/account/release'.format(pgpool_url)
     data = {
         'username': username
     }
