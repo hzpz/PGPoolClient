@@ -79,7 +79,7 @@ def merge_accounts(existing_accounts, pgpool_accounts, accounts_banned):
     accounts = []
     for acc in existing_accounts:
         username = acc[1]
-        if username in accounts_banned:
+        if accounts_banned is None or username in accounts_banned:
             pgpool_account = pgpool_accounts.pop()
             pgpool_username = pgpool_account['username']
             log.info('Adding account %s', pgpool_username)
