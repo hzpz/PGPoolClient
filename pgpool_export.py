@@ -68,7 +68,7 @@ def get_num_new_accounts(args):
 def pgpool_mark_banned_and_release_accounts(pgpool_url, accounts, accounts_banned):
     for acc in accounts:
         username = acc[1]
-        if username in accounts_banned:
+        if accounts_banned is None or username in accounts_banned:
             log.info('Marking account %s as banned', username)
             pgpool_mark_banned(pgpool_url, username)
             log.info('Releasing account %s', username)
