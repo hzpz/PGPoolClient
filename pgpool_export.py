@@ -35,10 +35,11 @@ def parse_args():
 
 def read_accounts(accounts_file_name):
     accounts = []
-    with open(accounts_file_name) as accounts_file:
-        reader = csv.reader(accounts_file)
-        for acc in reader:
-            accounts.append(acc)
+    if os.path.exists(accounts_file_name):
+        with open(accounts_file_name) as accounts_file:
+            reader = csv.reader(accounts_file)
+            for acc in reader:
+                accounts.append(acc)
     return accounts
 
 
@@ -86,6 +87,11 @@ def merge_accounts(existing_accounts, pgpool_accounts, accounts_banned):
             accounts.append([pgpool_account['auth_service'], pgpool_username, pgpool_account['password']])
         else:
             accounts.append(acc)
+
+    for pgpool_account in pgpool_accounts:
+        pgpool_username = pgpool_account['username']
+        log.info('Adding account %s', pgpool_username)
+        accounts.append([pgpool_account['auth_service'], pgpool_username, pgpool_account['password']])
     return accounts
 
 
